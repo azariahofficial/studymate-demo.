@@ -13,7 +13,7 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 # Page configuration
 st.set_page_config(
     page_title="StudyMate Demo",
-    page_icon="📚",
+    page_icon="",
     layout="wide"
 )
 
