@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 import json
@@ -10,11 +10,8 @@ from datetime import date
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Configure client to use Gemini via OpenAI-compatible endpoint
-client = OpenAI(
-    api_key=API_KEY,
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
+# Configure Gemini using the official library
+genai.configure(api_key=API_KEY)
 
 # Page configuration
 st.set_page_config(
@@ -52,10 +49,13 @@ if st.button("🔍 Decompose Assignment", type="primary", use_container_width=Tr
     if not assignment_description:
         st.error("⚠️ Please enter an assignment description.")
     elif not API_KEY:
-        st.error("⚠️ API key not found. Please check your .env file.")
+        st.error("⚠️ API key not found. Please check your secrets.")
     else:
         with st.spinner("🧠 StudyMate is analyzing your assignment..."):
             try:
+                # Initialize Gemini model
+                model = genai.GenerativeModel('gemini-3.6-flash')
+                
                 # Create prompt
                 prompt = f"""
                 You are an academic assistant helping students plan their work.
@@ -77,16 +77,9 @@ if st.button("🔍 Decompose Assignment", type="primary", use_container_width=Tr
                 ]
                 """
                 
-                # Generate response using OpenAI-compatible client
-                response = client.chat.completions.create(
-                    model="gemini-3.6-flash",
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=1000
-                )
-                
-                content = response.choices[0].message.content
+                # Generate response
+                response = model.generate_content(prompt)
+                content = response.text
                 
                 # Extract JSON from response
                 start_idx = content.find('[')
