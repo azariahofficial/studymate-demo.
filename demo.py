@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 import os
 import json
@@ -10,8 +10,8 @@ from datetime import date
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Configure Gemini using the official library
-genai.configure(api_key=API_KEY)
+# Initialize the GenAI client
+client = genai.Client(api_key=API_KEY)
 
 # Page configuration
 st.set_page_config(
@@ -53,9 +53,6 @@ if st.button("🔍 Decompose Assignment", type="primary", use_container_width=Tr
     else:
         with st.spinner("🧠 StudyMate is analyzing your assignment..."):
             try:
-                # Initialize Gemini model
-                model = genai.GenerativeModel('gemini-3.6-flash')
-                
                 # Create prompt
                 prompt = f"""
                 You are an academic assistant helping students plan their work.
@@ -77,8 +74,12 @@ if st.button("🔍 Decompose Assignment", type="primary", use_container_width=Tr
                 ]
                 """
                 
-                # Generate response
-                response = model.generate_content(prompt)
+                # Generate response using the new SDK
+                response = client.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=prompt
+                )
+                
                 content = response.text
                 
                 # Extract JSON from response
